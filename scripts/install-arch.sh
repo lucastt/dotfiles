@@ -66,6 +66,11 @@ go install golang.org/x/tools/cmd/goimports@latest
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 info "Go tools installed"
 
+# ── npm prefix (user-local) ───────────────────────────────────────────────
+mkdir -p "$HOME/.npm-global"
+npm config set prefix "$HOME/.npm-global"
+export PATH="$HOME/.npm-global/bin:$PATH"
+
 # ── LSP servers ────────────────────────────────────────────────────────────
 section "LSP servers"
 

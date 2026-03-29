@@ -174,6 +174,11 @@ else
   info "Node already installed: $(node --version)"
 fi
 
+# ── npm prefix (user-local) ───────────────────────────────────────────────
+mkdir -p "$HOME/.npm-global"
+npm config set prefix "$HOME/.npm-global"
+export PATH="$HOME/.npm-global/bin:$PATH"
+
 # ── LSP servers ────────────────────────────────────────────────────────────
 section "LSP servers"
 
