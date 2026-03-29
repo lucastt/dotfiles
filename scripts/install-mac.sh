@@ -94,7 +94,7 @@ info "LSP servers installed"
 # ── Claude Code CLI ────────────────────────────────────────────────────────
 section "Claude Code CLI"
 
-npm install -g @anthropic-ai/claude-code
+curl -fsSL https://claude.ai/install.sh | bash
 info "Claude Code installed"
 
 # ── Oh My Zsh ──────────────────────────────────────────────────────────────

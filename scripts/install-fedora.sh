@@ -74,7 +74,7 @@ section "System packages"
 
 sudo dnf install -y \
   curl wget unzip \
-  zsh tmux \
+  zsh tmux neovim \
   ripgrep fd-find \
   fzf bat eza zoxide \
   jq yq tree \
@@ -84,26 +84,9 @@ sudo dnf install -y \
   gnome-tweaks \
   ShellCheck
 
-sudo dnf groupinstall -y "Development Tools"
+sudo dnf group install -y development-tools
 
 info "System packages installed"
-
-# ── Neovim ─────────────────────────────────────────────────────────────────
-section "Neovim"
-
-NVIM_VERSION="v0.10.3"
-
-if ! command -v nvim &>/dev/null; then
-  sudo mkdir -p /opt/nvim
-  curl -Lo /tmp/nvim.tar.gz \
-    "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz"
-  sudo tar -xzf /tmp/nvim.tar.gz -C /opt/nvim --strip-components=1
-  sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
-  rm /tmp/nvim.tar.gz
-  info "Neovim ${NVIM_VERSION} installed"
-else
-  info "Neovim already installed: $(nvim --version | head -1)"
-fi
 
 # ── Alacritty ──────────────────────────────────────────────────────────────
 section "Alacritty"
@@ -217,7 +200,7 @@ fi
 # ── Claude Code CLI ────────────────────────────────────────────────────────
 section "Claude Code CLI"
 
-npm install -g @anthropic-ai/claude-code
+curl -fsSL https://claude.ai/install.sh | bash
 info "Claude Code installed"
 
 # ── Zsh as default shell ──────────────────────────────────────────────────

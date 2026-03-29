@@ -65,7 +65,7 @@ info "TPM ready"
 section "Claude Code CLI"
 
 if ! command -v claude &>/dev/null; then
-  npm install -g @anthropic-ai/claude-code
+  curl -fsSL https://claude.ai/install.sh | bash
   info "Claude Code installed"
 else
   info "Claude Code already installed"
