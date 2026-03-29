@@ -1,0 +1,20 @@
+# ~/.zshrc.local
+# Machine-specific secrets, work config, and overrides — DO NOT commit this file.
+# Copy to ~/.zshrc.local and fill in your values.
+
+# ── Secrets ──────────────────────────────────────────────────────────────────
+export GITHUB_TOKEN='your-github-token'
+export VAULT_ADDR='https://your-vault-url'
+export VAULT_TOKEN='your-vault-token'
+
+# ── Work env ─────────────────────────────────────────────────────────────────
+# export PATH="$PATH:/opt/your-company/tools"
+# export SERVICE='your-service'
+# export GOPRIVATE='github.com/your-org'
+# export COMPOSE_PROFILES='monitoring'
+# export SAML2AWS_SESSION_DURATION=43200
+# export SAML2AWS_USERNAME='you@company.com'
+
+# ── Work aliases ─────────────────────────────────────────────────────────────
+# alias vpnconnect="gpclient connect your-vpn-gateway"
+# alias work="cd $HOME/Code/your-org"

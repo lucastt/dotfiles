@@ -1,0 +1,11 @@
+# ~/.gitconfig.local
+# Machine-specific git config — DO NOT commit this file.
+# Copy to ~/.gitconfig.local and fill in your values.
+
+[user]
+    email = you@company.com
+    signingkey = YOUR-GPG-KEY-ID
+[commit]
+    gpgsign = true
+[tag]
+    gpgSign = true

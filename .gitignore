@@ -1,0 +1,19 @@
+# Secrets
+*.local
+.zshrc.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Neovim
+lazy-lock.json
+
+# Shell
+.zsh_history
