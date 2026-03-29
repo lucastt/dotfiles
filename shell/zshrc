@@ -1,0 +1,157 @@
+# ~/.zshrc
+
+# ── GPG ───────────────────────────────────────────────────────────────────────
+export GPG_TTY=$(tty)
+
+# ── PATH — languages & runtimes ───────────────────────────────────────────────
+
+# Go
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+export PATH=$PATH:/usr/local/go/bin
+
+# Rust
+export PATH=$PATH:$HOME/.cargo/bin
+
+# JVM
+export PATH=$PATH:/opt/gradle/gradle-8.4/bin
+
+# Python (user-installed binaries)
+pythonUserBaseDir=$(python3 -m site --user-base)
+export PATH="$pythonUserBaseDir/bin:$PATH"
+unset pythonUserBaseDir
+
+# Homebrew (Mac — harmless no-op on Linux)
+[[ -f /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# ── PATH — general ────────────────────────────────────────────────────────────
+export PATH=$PATH:$HOME/bin
+export PATH=$PATH:$HOME/.local/bin
+
+# nvim (Linux path — keep for Linux machine)
+export PATH="$PATH:/opt/nvim-linux64/bin"
+
+# Istio
+export PATH="$HOME/istio-1.20.0/bin:$PATH"
+
+# Google Cloud SDK
+[[ -f "$HOME/google-cloud-sdk/path.zsh.inc" ]]       && source "$HOME/google-cloud-sdk/path.zsh.inc"
+[[ -f "$HOME/google-cloud-sdk/completion.zsh.inc" ]]  && source "$HOME/google-cloud-sdk/completion.zsh.inc"
+
+# ── Local overrides (secrets, work config, machine-specific vars) ────────────
+# Create ~/.zshrc.local from shell/zshrc.local.example
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+
+# ── Editor ────────────────────────────────────────────────────────────────────
+export EDITOR="nvim"
+export VISUAL="nvim"
+
+# ── Oh My Zsh ─────────────────────────────────────────────────────────────────
+export ZSH="$HOME/.oh-my-zsh"
+
+# Theme disabled — Starship handles the prompt.
+# To revert to Pure: comment ZSH_THEME="" and the starship eval at the bottom,
+# then uncomment the Pure block near the bottom of this file.
+ZSH_THEME=""
+
+plugins=(
+  git                        # gst, gco, glog, gd, etc.
+  zsh-autosuggestions        # fish-style inline suggestions
+  zsh-syntax-highlighting    # red = not found, green = valid command
+  fzf                        # Ctrl-R fuzzy history, Ctrl-T fuzzy file open
+  macos                      # open, pbc, pbp helpers
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# ── Aliases — tools ───────────────────────────────────────────────────────────
+alias k="kubectl"
+alias e="nvim"
+alias v="nvim"
+alias tf="terraform"
+alias golint="golangci-lint run --fix=false"
+
+# Better defaults — only activate if tools are installed
+command -v bat &>/dev/null && alias cat="bat --style=plain"
+command -v eza &>/dev/null && alias ls="eza --icons --group-directories-first"
+command -v eza &>/dev/null && alias ll="eza -la --icons --group-directories-first --git"
+command -v eza &>/dev/null && alias lt="eza --tree --icons --level=2"
+
+# ── Aliases — tmux ────────────────────────────────────────────────────────────
+alias t="tmux"
+alias ta="tmux attach -t"
+alias tl="tmux list-sessions"
+
+# New session named after current dir, attach if already exists
+tw() {
+  local session="${1:-$(basename $PWD)}"
+  tmux new-session -A -s "$session"
+}
+
+# ── Aliases — Go ─────────────────────────────────────────────────────────────
+alias got="go test ./..."
+alias gotr="go test -race ./..."
+alias gotv="go test -v ./..."
+alias gob="go build ./..."
+alias gomod="go mod tidy"
+
+# ── Aliases — Claude Code ────────────────────────────────────────────────────
+alias cl="claude"
+alias clc="claude --continue"
+
+# ── k8s helpers ──────────────────────────────────────────────────────────────
+alias kns="kubectl config set-context --current --namespace"
+alias kgp="kubectl get pods"
+alias kgpa="kubectl get pods -A"
+alias kl="kubectl logs -f"
+alias ke="kubectl exec -it"
+
+# fzf-powered context + namespace switcher
+kx() {
+  local ctx=$(kubectl config get-contexts -o name | fzf --prompt="context> ")
+  [ -n "$ctx" ] && kubectl config use-context "$ctx"
+}
+kn() {
+  local ns=$(kubectl get ns -o name | sed 's|namespace/||' | fzf --prompt="namespace> ")
+  [ -n "$ns" ] && kubectl config set-context --current --namespace "$ns"
+}
+
+# ── fzf ──────────────────────────────────────────────────────────────────────
+export FZF_DEFAULT_COMMAND="rg --files --hidden --glob '!.git'"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --info=inline"
+
+# ── zoxide (smarter cd) ───────────────────────────────────────────────────────
+# Install: brew install zoxide
+# z foo  → jump to most-used dir matching "foo"
+# zi     → interactive fzf picker of known dirs
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh)"
+  alias cd="z"
+  alias cdi="zi"
+fi
+
+# ── zsh-autosuggestions ──────────────────────────────────────────────────────
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#5c6370"      # one dark grey
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+bindkey '^ ' autosuggest-accept                    # Ctrl+Space accepts suggestion
+
+# ── History ───────────────────────────────────────────────────────────────────
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt SHARE_HISTORY
+
+# ── Theme ─────────────────────────────────────────────────────────────────────
+
+## Pure (your previous theme — uncomment to restore)
+## To go back: comment the Starship eval below, uncomment these 4 lines
+# export PURE_PROMPT_SYMBOL=$
+# fpath+=($HOME/.zsh/pure)
+# autoload -U promptinit; promptinit
+# prompt pure
+
+## Starship — must be the very last line of .zshrc
+## To disable: comment this out and uncomment Pure block above
+eval "$(starship init zsh)"

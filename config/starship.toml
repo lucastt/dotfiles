@@ -1,0 +1,97 @@
+# ~/.config/starship.toml
+# Starship prompt config
+# Matches your One Dark alacritty + nvim theme
+# Requires JetBrainsMono Nerd Font (already set in alacritty.toml)
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$golang\
+$python\
+$rust\
+$nodejs\
+$kubernetes\
+$cmd_duration\
+$line_break\
+$character"""
+
+# ── Directory ────────────────────────────────────────────────────────────────
+[directory]
+style = "bold #61afef"          # one dark blue
+truncation_length = 4
+truncate_to_repo = true
+read_only = " 󰌾"
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+[git_branch]
+symbol = " "
+style = "bold #98c379"          # one dark green
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+style = "#e06c75"               # one dark red
+format = '([\[$all_status$ahead_behind\]]($style) )'
+conflicted = "⚡"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+modified = "~${count}"
+untracked = "?${count}"
+staged = "+${count}"
+deleted = "-${count}"
+
+# ── Languages (only shows when relevant files exist) ─────────────────────────
+[golang]
+symbol = " "
+style = "#61afef"
+format = "[$symbol($version)]($style) "
+detect_files = ["go.mod", "go.sum", "go.work"]
+
+[python]
+symbol = " "
+style = "#e5c07b"               # one dark yellow
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+
+[rust]
+symbol = " "
+style = "#e06c75"
+format = "[$symbol($version)]($style) "
+
+[nodejs]
+symbol = " "
+style = "#98c379"
+format = "[$symbol($version)]($style) "
+detect_files = ["package.json"]
+detect_folders = ["node_modules"]
+
+# ── Kubernetes — shows current context:namespace ─────────────────────────────
+# Only visible when KUBECONFIG is set or ~/.kube/config exists
+[kubernetes]
+symbol = "󱃾 "
+style = "bold #c678dd"          # one dark purple
+format = '[$symbol$context( \($namespace\))]($style) '
+disabled = false
+
+# ── Command duration — shows if command took > 2s ────────────────────────────
+[cmd_duration]
+min_time = 2_000
+style = "#e5c07b"
+format = "took [$duration]($style) "
+
+# ── Prompt character ─────────────────────────────────────────────────────────
+[character]
+success_symbol = "[❯](bold #98c379)"    # green when last command succeeded
+error_symbol = "[❯](bold #e06c75)"      # red on failure
+
+# ── Things to not show ───────────────────────────────────────────────────────
+[package]
+disabled = true
+
+[aws]
+disabled = true
+
+[gcloud]
+disabled = true

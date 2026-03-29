@@ -1,0 +1,10 @@
+[font]
+# On Linux use "JetBrainsMonoNerdFont", on Mac use "JetBrainsMono Nerd Font"
+#normal.family = "JetBrainsMonoNerdFont"
+normal.family = "JetBrainsMono Nerd Font"
+size = 16.0
+
+[general]
+import = [
+    "~/.config/alacritty/themes/one_dark.toml"
+]
