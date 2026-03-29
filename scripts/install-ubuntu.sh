@@ -247,6 +247,35 @@ section "TPM"
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 info "TPM ready"
 
+# ── Linters ────────────────────────────────────────────────────────────
+section "Linters"
+
+sudo apt-get install -y shellcheck
+
+if ! command -v luacheck &>/dev/null; then
+  sudo luarocks install luacheck
+  info "luacheck installed"
+else
+  info "luacheck already installed"
+fi
+
+if ! command -v gitleaks &>/dev/null; then
+  GITLEAKS_VERSION="8.21.2"
+  curl -Lo /tmp/gitleaks.tar.gz \
+    "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+  sudo tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin/ gitleaks
+  rm /tmp/gitleaks.tar.gz
+  info "gitleaks installed"
+else
+  info "gitleaks already installed"
+fi
+
+info "Linters ready (shellcheck, luacheck, gitleaks)"
+
+# ── Git hooks ──────────────────────────────────────────────────────────
+git -C "$REPO_DIR" config core.hooksPath .githooks
+info "Gitleaks pre-commit hook enabled"
+
 # ── Apply configs ──────────────────────────────────────────────────────────
 section "Applying configs"
 

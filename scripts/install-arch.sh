@@ -127,6 +127,27 @@ section "TPM"
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 info "TPM ready"
 
+# ── Linters ────────────────────────────────────────────────────────────
+section "Linters"
+
+sudo pacman -S --needed --noconfirm shellcheck
+
+if ! command -v luacheck &>/dev/null; then
+  sudo luarocks install luacheck
+  info "luacheck installed"
+else
+  info "luacheck already installed"
+fi
+
+yay -S --needed --noconfirm gitleaks 2>/dev/null || \
+  warn "gitleaks AUR install failed — install manually"
+
+info "Linters ready (shellcheck, luacheck, gitleaks)"
+
+# ── Git hooks ──────────────────────────────────────────────────────────
+git -C "$REPO_DIR" config core.hooksPath .githooks
+info "Gitleaks pre-commit hook enabled"
+
 # ── Apply configs ──────────────────────────────────────────────────────────
 section "Applying configs"
 

@@ -124,6 +124,16 @@ section "TPM"
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 info "TPM ready"
 
+# ── Linters ────────────────────────────────────────────────────────────
+section "Linters"
+
+brew install shellcheck gitleaks luacheck
+info "Linters ready (shellcheck, luacheck, gitleaks)"
+
+# ── Git hooks ──────────────────────────────────────────────────────────
+git -C "$REPO_DIR" config core.hooksPath .githooks
+info "Gitleaks pre-commit hook enabled"
+
 # ── Apply configs ──────────────────────────────────────────────────────────
 section "Applying configs"
 
