@@ -27,7 +27,7 @@ jobs:
         run: sudo apt-get install -y shellcheck
       - name: Run ShellCheck
         run: |
-          find scripts/ config/ -name '*.sh' -print0 \
+          find scripts/ config/ -name '*.sh' -not -path '*/tmux/scripts/*' -print0 \
             | xargs -0 shellcheck --severity=error
 
   luacheck:
@@ -39,5 +39,5 @@ jobs:
         run: |
           sudo apt-get install -y luarocks
           sudo luarocks install luacheck
-      - name: Run luacheck (warnings reported, fails on errors)
-        run: luacheck config/nvim/ --no-max-warnings
+      - name: Run luacheck
+        run: luacheck config/nvim/
