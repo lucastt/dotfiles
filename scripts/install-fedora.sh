@@ -287,8 +287,9 @@ if $NEEDS_REBOOT; then
 fi
 echo "  Manual steps:"
 echo "  1. Start zsh:           exec zsh"
-echo "  2. tmux plugins:        start tmux, then prefix + I"
-echo "  3. nvim plugins:        nvim, then :Lazy sync"
-echo "  4. Claude Code auth:    claude"
+echo "  2. Claude Code auth:    claude"
+echo "  3. Get secrets and keys from vault"
+echo "  4. tmux plugins:        start tmux, then prefix + I"
+echo "  5. nvim plugins:        nvim, then :Lazy sync"
 echo ""
 warn "Add your secrets to ~/.zshrc.local (see shell/zshrc.local.example)"
