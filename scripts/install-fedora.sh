@@ -80,7 +80,7 @@ sudo dnf install -y \
   jq yq tree \
   python3 python3-pip \
   lua luarocks \
-  ca-certificates gnupg2 \
+  ca-certificates gnupg2 pinentry \
   gnome-tweaks \
   ShellCheck
 

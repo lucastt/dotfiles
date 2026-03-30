@@ -23,13 +23,13 @@ local plugins = {
     { 'nvim-tree/nvim-web-devicons' },
 
     -- ── LSP ──────────────────────────────────────────────────────────────────
-    { 'neovim/nvim-lspconfig', name = 'lspconfig' },
+    { 'neovim/nvim-lspconfig', name = 'lspconfig', tag = 'v2.1.0' },
 
     -- ── Telescope ────────────────────────────────────────────────────────────
     { 'nvim-telescope/telescope.nvim', tag = '0.1.8',
       dependencies = { 'nvim-lua/plenary.nvim' }
     },
-    { 'nvim-treesitter/nvim-treesitter', name = 'tree-sitter' },
+    { 'nvim-treesitter/nvim-treesitter', name = 'tree-sitter', tag = 'v0.9.3' },
 
     -- ── Syntax / QoL ─────────────────────────────────────────────────────────
     { 'lukas-reineke/indent-blankline.nvim', name = 'ibl' },
