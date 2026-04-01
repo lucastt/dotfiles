@@ -88,11 +88,6 @@ if [[ "$OS" == "Linux" ]] && [[ -d "$REPO_DIR/fonts" ]]; then
   info "JetBrainsMono Nerd Font installed"
 fi
 
-# ── Log ────────────────────────────────────────────────────────────────────────
-COMMIT_SHA=$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
-echo "$(date '+%Y-%m-%d %H:%M:%S')  $COMMIT_SHA  $(uname -s)/$(uname -m)" >> "$HOME/.dotfiles-apply.log"
-info "Logged to ~/.dotfiles-apply.log (sha: ${COMMIT_SHA:0:7})"
-
 # ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
 info "All configs linked."
