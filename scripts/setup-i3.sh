@@ -42,12 +42,10 @@ info "i3 packages installed"
 # ── Apply i3 config ───────────────────────────────────────────────────────
 section "i3 config"
 
-mkdir -p "$HOME/.config/i3"
-cp "$REPO_DIR/config/i3/config" "$HOME/.config/i3/config"
-[[ -f "$REPO_DIR/config/i3/multi_display.sh" ]] && \
-  cp "$REPO_DIR/config/i3/multi_display.sh" "$HOME/.config/i3/multi_display.sh" && \
-  chmod +x "$HOME/.config/i3/multi_display.sh"
-info "i3 config applied"
+[[ -L "$HOME/.config/i3" ]] && rm "$HOME/.config/i3"
+[[ -d "$HOME/.config/i3" ]] && rm -rf "$HOME/.config/i3"
+ln -s "$REPO_DIR/config/i3" "$HOME/.config/i3"
+info "i3 config linked"
 
 # ── Wallpapers ─────────────────────────────────────────────────────────────
 section "Wallpapers"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # apply-configs.sh
-# Backs up existing configs and copies repo configs to their target locations.
-# Called by all install scripts, or run standalone to refresh configs.
+# Creates symlinks from dotfiles repo to their target locations.
+# Safe to run multiple times — skips already-correct symlinks.
 #
 # Usage: bash scripts/apply-configs.sh
 
@@ -17,143 +17,85 @@ section() { echo -e "\n${YELLOW}-- $1 --${NC}"; }
 
 OS="$(uname -s)"
 
-# ── Backup existing configs ────────────────────────────────────────────────
-section "Backup"
+# ── Symlink helper ─────────────────────────────────────────────────────────────
+# link_config <source> <target>
+# - Already correct symlink → skip
+# - Symlink to wrong target → relink
+# - Real file/dir → remove and replace (dotfiles is source of truth)
+link_config() {
+  local src="$1"
+  local dst="$2"
 
-BACKUP_DIR="$HOME/.config-backup-$(date +%Y%m%d-%H%M%S)"
-NEEDS_BACKUP=false
+  if [[ -L "$dst" && "$(readlink "$dst")" == "$src" ]]; then
+    info "already linked: $dst"
+    return
+  fi
 
-for target in \
-  "$HOME/.zshrc" \
-  "$HOME/.zprofile" \
-  "$HOME/.tmux.conf" \
-  "$HOME/.gitconfig" \
-  "$HOME/.config/alacritty" \
-  "$HOME/.config/nvim" \
-  "$HOME/.config/starship.toml" \
-  "$HOME/.config/tmux" \
-  "$HOME/.config/aerospace" \
-  "$HOME/.config/i3" \
-  "$HOME/.zsh"; do
-  [[ -e "$target" ]] && NEEDS_BACKUP=true && break
-done
+  if [[ -L "$dst" ]]; then
+    warn "relinking: $dst (was → $(readlink "$dst"))"
+    rm "$dst"
+  elif [[ -e "$dst" ]]; then
+    warn "replacing: $dst"
+    rm -rf "$dst"
+  fi
 
-if $NEEDS_BACKUP; then
-  mkdir -p "$BACKUP_DIR"
-  for target in \
-    "$HOME/.zshrc" \
-    "$HOME/.zprofile" \
-    "$HOME/.tmux.conf" \
-    "$HOME/.gitconfig"; do
-    [[ -f "$target" ]] && cp "$target" "$BACKUP_DIR/" 2>/dev/null
-  done
-  for target in \
-    "$HOME/.config/alacritty" \
-    "$HOME/.config/nvim" \
-    "$HOME/.config/tmux" \
-    "$HOME/.config/aerospace" \
-    "$HOME/.config/i3" \
-    "$HOME/.zsh"; do
-    [[ -d "$target" ]] && cp -r "$target" "$BACKUP_DIR/" 2>/dev/null
-  done
-  [[ -f "$HOME/.config/starship.toml" ]] && cp "$HOME/.config/starship.toml" "$BACKUP_DIR/" 2>/dev/null
-  info "Existing configs backed up to $BACKUP_DIR"
-else
-  info "No existing configs found — skipping backup"
-fi
+  mkdir -p "$(dirname "$dst")"
+  ln -s "$src" "$dst"
+  info "linked: $dst → $src"
+}
 
-# ── Shell ──────────────────────────────────────────────────────────────────
-section "Shell configs"
+# ── Shell ──────────────────────────────────────────────────────────────────────
+section "Shell"
+link_config "$REPO_DIR/shell/zshrc" "$HOME/.zshrc"
+[[ "$OS" == "Darwin" ]] && link_config "$REPO_DIR/shell/zprofile" "$HOME/.zprofile"
+link_config "$REPO_DIR/shell/zsh/custom-colorschemes/onedark.zsh" "$HOME/.zsh/custom-colorschemes/onedark.zsh"
 
-ZSHRC_SRC="$REPO_DIR/shell/zshrc"
+# ── Git ────────────────────────────────────────────────────────────────────────
+section "Git"
+link_config "$REPO_DIR/git/gitconfig" "$HOME/.gitconfig"
 
-# On Linux, remove the macos OMZ plugin line
-if [[ "$OS" == "Linux" ]]; then
-  sed 's/  macos.*$//' "$ZSHRC_SRC" > "$HOME/.zshrc"
-  info "~/.zshrc applied (macos plugin removed for Linux)"
-else
-  cp "$ZSHRC_SRC" "$HOME/.zshrc"
-  info "~/.zshrc applied"
-fi
+# ── tmux ───────────────────────────────────────────────────────────────────────
+section "tmux"
+link_config "$REPO_DIR/tmux/tmux.conf" "$HOME/.tmux.conf"
+link_config "$REPO_DIR/config/tmux/scripts/claude-layout.sh" "$HOME/.config/tmux/scripts/claude-layout.sh"
+chmod +x "$REPO_DIR/config/tmux/scripts/claude-layout.sh"
 
-if [[ "$OS" == "Darwin" ]]; then
-  cp "$REPO_DIR/shell/zprofile" "$HOME/.zprofile"
-  info "~/.zprofile applied"
-fi
-
-mkdir -p "$HOME/.zsh/custom-colorschemes"
-cp "$REPO_DIR/shell/zsh/custom-colorschemes/onedark.zsh" "$HOME/.zsh/custom-colorschemes/onedark.zsh"
-info "zsh colorscheme applied"
-
-# ── Git ────────────────────────────────────────────────────────────────────
-section "Git config"
-
-cp "$REPO_DIR/git/gitconfig" "$HOME/.gitconfig"
-info "~/.gitconfig applied"
-
-# ── tmux ───────────────────────────────────────────────────────────────────
-section "tmux config"
-
-cp "$REPO_DIR/tmux/tmux.conf" "$HOME/.tmux.conf"
-mkdir -p "$HOME/.config/tmux/scripts"
-cp "$REPO_DIR/config/tmux/scripts/claude-layout.sh" "$HOME/.config/tmux/scripts/"
-chmod +x "$HOME/.config/tmux/scripts/claude-layout.sh"
-info "tmux config applied"
-
-# ── Alacritty ──────────────────────────────────────────────────────────────
+# ── Alacritty ──────────────────────────────────────────────────────────────────
 section "Alacritty"
+link_config "$REPO_DIR/config/alacritty" "$HOME/.config/alacritty"
 
-mkdir -p "$HOME/.config/alacritty/themes"
-cp "$REPO_DIR/config/alacritty/alacritty.toml" "$HOME/.config/alacritty/alacritty.toml"
-cp "$REPO_DIR/config/alacritty/themes/one_dark.toml" "$HOME/.config/alacritty/themes/one_dark.toml"
-info "Alacritty config applied"
-
-# ── Neovim ─────────────────────────────────────────────────────────────────
+# ── Neovim ─────────────────────────────────────────────────────────────────────
 section "Neovim"
+link_config "$REPO_DIR/config/nvim" "$HOME/.config/nvim"
+# lazy-lock.json is gitignored — nvim writes it into the symlinked dir, never committed
 
-mkdir -p "$HOME/.config/nvim/lua/core"
-mkdir -p "$HOME/.config/nvim/snippets"
-mkdir -p "$HOME/.config/nvim/ftplugin"
-
-cp "$REPO_DIR/config/nvim/init.lua"     "$HOME/.config/nvim/init.lua"
-cp "$REPO_DIR/config/nvim/old-init.vim" "$HOME/.config/nvim/old-init.vim"
-
-for f in plugins.lua ai.lua lsp.lua navigation.lua autocompletion.lua dap.lua syntax.lua githublinks.lua copilot.lua; do
-  cp "$REPO_DIR/config/nvim/lua/core/$f" "$HOME/.config/nvim/lua/core/$f"
-done
-
-cp "$REPO_DIR/config/nvim/snippets/go.snippets" "$HOME/.config/nvim/snippets/go.snippets"
-cp "$REPO_DIR/config/nvim/ftplugin/java.lua"    "$HOME/.config/nvim/ftplugin/java.lua"
-info "Neovim config applied"
-
-# ── Starship ───────────────────────────────────────────────────────────────
+# ── Starship ───────────────────────────────────────────────────────────────────
 section "Starship"
+link_config "$REPO_DIR/config/starship.toml" "$HOME/.config/starship.toml"
 
-mkdir -p "$HOME/.config"
-cp "$REPO_DIR/config/starship.toml" "$HOME/.config/starship.toml"
-info "Starship config applied"
-
-# ── AeroSpace (Mac only) ──────────────────────────────────────────────────
+# ── AeroSpace (Mac only) ──────────────────────────────────────────────────────
 if [[ "$OS" == "Darwin" ]]; then
   section "AeroSpace"
-  mkdir -p "$HOME/.config/aerospace"
-  cp "$REPO_DIR/config/aerospace/aerospace.toml" "$HOME/.config/aerospace/aerospace.toml"
-  cp "$REPO_DIR/config/aerospace/i3-like.toml"   "$HOME/.config/aerospace/i3-like.toml"
-  info "AeroSpace config applied"
+  link_config "$REPO_DIR/config/aerospace" "$HOME/.config/aerospace"
 fi
 
-# ── Fonts (Linux only) ────────────────────────────────────────────────────
+# ── Fonts (Linux only — binary files, copied not linked) ──────────────────────
 if [[ "$OS" == "Linux" ]] && [[ -d "$REPO_DIR/fonts" ]]; then
   section "Fonts"
   mkdir -p "$HOME/.local/share/fonts"
-  cp "$REPO_DIR/fonts/"*.ttf "$HOME/.local/share/fonts/" 2>/dev/null
+  cp "$REPO_DIR/fonts/"*.ttf "$HOME/.local/share/fonts/" 2>/dev/null || true
   fc-cache -fv > /dev/null 2>&1
   info "JetBrainsMono Nerd Font installed"
 fi
 
-# ── Done ───────────────────────────────────────────────────────────────────
+# ── Log ────────────────────────────────────────────────────────────────────────
+COMMIT_SHA=$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
+echo "$(date '+%Y-%m-%d %H:%M:%S')  $COMMIT_SHA  $(uname -s)/$(uname -m)" >> "$HOME/.dotfiles-apply.log"
+info "Logged to ~/.dotfiles-apply.log (sha: ${COMMIT_SHA:0:7})"
+
+# ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
-info "All configs applied."
+info "All configs linked."
 
 if [[ ! -f "$HOME/.zshrc.local" ]]; then
   warn "No ~/.zshrc.local found. Copy the example and add your secrets:"
