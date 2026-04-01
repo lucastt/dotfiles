@@ -157,4 +157,8 @@ setopt SHARE_HISTORY
 
 ## Starship — must be the very last line of .zshrc
 ## To disable: comment this out and uncomment Pure block above
+
+# ── Tmux activity logger ──────────────────────────────────────────────────────
+[[ -f ~/dotfiles/scripts/tmux-activity-logger.zsh ]] && source ~/dotfiles/scripts/tmux-activity-logger.zsh
+
 eval "$(starship init zsh)"
