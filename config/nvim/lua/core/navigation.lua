@@ -1,5 +1,9 @@
 -- Navigation stuff --------------------------------------------------------------------------
 -- TODO: consider only searching in directories that are git repos. This might improve search a lot...
+
+-- Yank visual selection to tmux buffer (paste with prefix+p)
+vim.keymap.set('v', '<leader>y', ':w !tmux load-buffer -<CR><CR>', { silent = true })
+
 local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
 vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
