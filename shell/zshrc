@@ -84,6 +84,7 @@ command -v eza &>/dev/null && alias lt="eza --tree --icons --level=2"
 alias t="tmux"
 alias ta="tmux attach -t"
 alias tl="tmux list-sessions"
+alias td="tmux detach"
 
 # New session named after current dir, attach if already exists
 tw() {

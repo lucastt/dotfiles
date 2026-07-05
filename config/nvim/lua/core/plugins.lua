@@ -166,7 +166,12 @@ local plugins = {
           vim.bo[snap_buf].buflisted = false
           vim.bo[snap_buf].modifiable = false
           vim.bo[snap_buf].filetype = snapshot.filetype or ""
-          vim.api.nvim_buf_set_name(snap_buf, "99-before://" .. snapshot.name)
+          local snap_name = "99-before://" .. snapshot.name
+          local existing = vim.fn.bufnr(snap_name)
+          if existing ~= -1 then
+            vim.api.nvim_buf_delete(existing, { force = true })
+          end
+          vim.api.nvim_buf_set_name(snap_buf, snap_name)
           vim.cmd("diffthis")
 
           -- Open the current file (after) on the right
