@@ -83,7 +83,7 @@ info "Go tools installed"
 # ── LSP servers ────────────────────────────────────────────────────────────
 section "LSP servers"
 
-pip3 install pyright 2>/dev/null || pip3 install --user pyright
+brew install pyright
 brew install hashicorp/tap/terraform-ls 2>/dev/null || true
 brew install bufbuild/buf/buf 2>/dev/null || true
 npm install -g vscode-langservers-extracted
