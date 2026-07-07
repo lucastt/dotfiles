@@ -38,6 +38,7 @@ sudo pacman -S --needed --noconfirm \
   git curl wget unzip \
   zsh tmux \
   neovim \
+  tree-sitter-cli \
   alacritty \
   ripgrep fd fzf bat eza zoxide \
   jq yq tree \

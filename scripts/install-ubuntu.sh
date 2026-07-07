@@ -52,6 +52,10 @@ info "System packages installed"
 # ── Neovim ─────────────────────────────────────────────────────────────────
 section "Neovim"
 
+# NOTE: pinned to 0.10.x, so nvim-treesitter uses its legacy `master` branch,
+# which compiles parsers with the C toolchain (build-essential, installed above)
+# and does NOT need the tree-sitter CLI. If you bump this to 0.11+, the config
+# switches to the `main` branch — add `tree-sitter-cli` here (see install-mac/fedora).
 NVIM_VERSION="v0.10.3"
 
 if ! command -v nvim &>/dev/null; then

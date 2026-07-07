@@ -7,102 +7,176 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
 
--- Imports.
--- https://github.com/golang/tools/blob/master/gopls/doc/vim.md#installation
-local lspconfig = require('lspconfig')
-local lsputil = require('lspconfig.util')
-
 -- capabilities for autocompletion - LSP integration
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
--- Language specific configs:
--- TODO: Separete this in one file per language under some inner dir
+-- nvim-lspconfig deprecated the `require('lspconfig').<server>.setup{}` framework
+-- on Neovim 0.11+ in favour of the built-in vim.lsp.config / vim.lsp.enable API
+-- (removed entirely in nvim-lspconfig v3.0.0). Branch on the same nvim-0.11
+-- predicate used in plugins.lua/syntax.lua so this shared config keeps working
+-- on older machines (Fedora/Ubuntu) with the legacy framework, untouched.
+if vim.fn.has('nvim-0.11') == 1 then
+  -- ── Neovim 0.11+ : native vim.lsp.config / vim.lsp.enable ──────────────────
+  -- Apply cmp completion capabilities to every server.
+  vim.lsp.config('*', { capabilities = capabilities })
 
--- Go --------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------
-
--- Gopls configs.
--- https://github.com/golang/tools/blob/master/gopls/doc/vim.md#custom-configuration
--- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#gopls
--- https://github.com/neovim/nvim-lspconfig/blob/df58d91c9351a9dc5be6cf8d54f49ab0d9a64e73/doc/lspconfig.txt#L429
-lspconfig.gopls.setup {
-    cmd = {"gopls", "serve"},
-    capabilities= capabilities,
-    filetypes = {"go", "gomod"},
-    --root_dir = lsputil.root_pattern("go.work", "go.mod", ".git"),
-    root_dir = lsputil.root_pattern("go.work", "go.mod"),
+  -- Go
+  vim.lsp.config('gopls', {
+    cmd = { 'gopls', 'serve' },
+    filetypes = { 'go', 'gomod' },
+    root_markers = { 'go.work', 'go.mod' },
     settings = {
-        gopls = {
-            experimentalPostfixCompletions = true,
-            analyses = {
-                unusedparams = true,
-                shadow = true,
-            },
-            staticcheck = true,
-        },
+      gopls = {
+        experimentalPostfixCompletions = true,
+        analyses = { unusedparams = true, shadow = true },
+        staticcheck = true,
+      },
     },
-}
+  })
 
--- Python --------------------------------------------------------------------------------
--- ---------------------------------------------------------------------------------------
-
-lspconfig.pyright.setup {
-  cmd = { "pyright-langserver", "--stdio" },
-  filetypes = { 'python' },
-  root_markers = {
-    'pyproject.toml',
-    'setup.py',
-    'setup.cfg',
-    'requirements.txt',
-    ".git",
-  },
-  settings = {
-    python = {
-      analysis = {
-        autoSearchPaths = true,
-        diagnosticMode = "openFilesOnly",
-        useLibraryCodeForTypes = true
-      }
-    }
-  },
-
-}
-
--- Rust ----------------------------------------------------------------------------------
--- ---------------------------------------------------------------------------------------
-
-lspconfig.rust_analyzer.setup({
-    filetypes = {"rust"},
+  -- Python
+  vim.lsp.config('pyright', {
+    cmd = { 'pyright-langserver', '--stdio' },
+    filetypes = { 'python' },
+    root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', '.git' },
     settings = {
-        ["rust-analyzer"] = {
-            imports = {
-                granularity = {
-                    group = "module",
-                },
-                prefix = "self",
-            },
-            cargo = {
-                buildScripts = {
-                    enable = true,
-                },
-            },
-            procMacro = {
-                enable = true
-            },
-        }
-    }
-})
+      python = {
+        analysis = {
+          autoSearchPaths = true,
+          diagnosticMode = 'openFilesOnly',
+          useLibraryCodeForTypes = true,
+        },
+      },
+    },
+  })
 
--- protobuf ------------------------------------------------------------------------------
--- ---------------------------------------------------------------------------------------
+  -- Rust
+  vim.lsp.config('rust_analyzer', {
+    filetypes = { 'rust' },
+    root_markers = { 'Cargo.toml', 'rust-project.json' },
+    settings = {
+      ['rust-analyzer'] = {
+        imports = { granularity = { group = 'module' }, prefix = 'self' },
+        cargo = { buildScripts = { enable = true } },
+        procMacro = { enable = true },
+      },
+    },
+  })
 
-require'lspconfig'.buf_ls.setup({
+  -- Protobuf
+  vim.lsp.config('buf_ls', {
     cmd = { 'buf', 'beta', 'lsp', '--timeout=0', '--log-format=text' },
-    filetypes = {"proto"},
-    root_dir = lsputil.root_pattern("buf.yaml", "buf.work.yaml", ".git"),
-})
+    filetypes = { 'proto' },
+    root_markers = { 'buf.yaml', 'buf.work.yaml', '.git' },
+  })
 
----------
+  -- Terraform
+  vim.lsp.config('terraformls', {
+    flags = { debounce_text_changes = 150 },
+  })
+
+  -- Vue / TS (volar)
+  vim.lsp.config('volar', {
+    filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'json' },
+  })
+
+  -- cssls and html use nvim-lspconfig's shipped defaults as-is.
+  vim.lsp.enable({
+    'gopls', 'pyright', 'rust_analyzer', 'buf_ls',
+    'terraformls', 'volar', 'cssls', 'html',
+  })
+else
+  -- ── Neovim ≤ 0.10 : legacy lspconfig framework (unchanged) ─────────────────
+  local lspconfig = require('lspconfig')
+  local lsputil = require('lspconfig.util')
+
+  -- Go
+  lspconfig.gopls.setup {
+      cmd = {"gopls", "serve"},
+      capabilities= capabilities,
+      filetypes = {"go", "gomod"},
+      root_dir = lsputil.root_pattern("go.work", "go.mod"),
+      settings = {
+          gopls = {
+              experimentalPostfixCompletions = true,
+              analyses = {
+                  unusedparams = true,
+                  shadow = true,
+              },
+              staticcheck = true,
+          },
+      },
+  }
+
+  -- Python
+  lspconfig.pyright.setup {
+    cmd = { "pyright-langserver", "--stdio" },
+    filetypes = { 'python' },
+    root_markers = {
+      'pyproject.toml',
+      'setup.py',
+      'setup.cfg',
+      'requirements.txt',
+      ".git",
+    },
+    settings = {
+      python = {
+        analysis = {
+          autoSearchPaths = true,
+          diagnosticMode = "openFilesOnly",
+          useLibraryCodeForTypes = true
+        }
+      }
+    },
+  }
+
+  -- Rust
+  lspconfig.rust_analyzer.setup({
+      filetypes = {"rust"},
+      settings = {
+          ["rust-analyzer"] = {
+              imports = {
+                  granularity = {
+                      group = "module",
+                  },
+                  prefix = "self",
+              },
+              cargo = {
+                  buildScripts = {
+                      enable = true,
+                  },
+              },
+              procMacro = {
+                  enable = true
+              },
+          }
+      }
+  })
+
+  -- protobuf
+  require'lspconfig'.buf_ls.setup({
+      cmd = { 'buf', 'beta', 'lsp', '--timeout=0', '--log-format=text' },
+      filetypes = {"proto"},
+      root_dir = lsputil.root_pattern("buf.yaml", "buf.work.yaml", ".git"),
+  })
+
+  -- Terraform
+  lspconfig.terraformls.setup({
+      flags = { debounce_text_changes = 150 },
+      textDocument = { completion = { completionItem = { snippetSupport = true } } },
+  })
+
+  -- Vue / TS (volar)
+  lspconfig.volar.setup{
+    filetypes = {'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'json'}
+  }
+
+  -- CSS
+  lspconfig.cssls.setup{}
+
+  -- HTML
+  lspconfig.html.setup{}
+end
 
 -- Configure imports organization using 'goimports' logic
 -- https://github.com/golang/tools/blob/master/gopls/doc/vim.md#imports
@@ -118,32 +192,6 @@ require'lspconfig'.buf_ls.setup({
 --     pattern = '*.go',
 --     callback = vim.lsp.buf.format
 -- })
-
--- Terraform -------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------
-
-lspconfig.terraformls.setup({
-    flags = { debounce_text_changes = 150 },
-    textDocument = { completion = { completionItem = { snippetSupport = true } } },
-})
-
--- TS --------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------
-
--- Need to use volar for TS otherwise I get random errors from LSP
---lspconfig.tsserver.setup{}
-
--- Vue ----
--- lspconfig.volar.setup{}
-lspconfig.volar.setup{
-  filetypes = {'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'json'}
-}
-
--- CSS ----
-lspconfig.cssls.setup{}
-
--- HTML ----
-lspconfig.html.setup{}
 
 -- General Attach configuration -----------------------------------------------------------------
 -------------------------------------------------------------------------------------------------
@@ -187,4 +235,3 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
   end,
 })
-

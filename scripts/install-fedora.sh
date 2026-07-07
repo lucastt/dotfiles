@@ -161,6 +161,22 @@ mkdir -p "$HOME/.npm-global"
 npm config set prefix "$HOME/.npm-global"
 export PATH="$HOME/.npm-global/bin:$PATH"
 
+# ── tree-sitter CLI ──────────────────────────────────────────────────────────
+# Required by nvim-treesitter's `main` branch (Neovim 0.11+) to compile parsers;
+# without it parser builds fail with `ENOENT 'tree-sitter'`. Non-fatal — every
+# branch is an if/elif condition, so a miss won't abort the run under `set -e`.
+section "tree-sitter CLI"
+
+if command -v tree-sitter &>/dev/null; then
+  info "tree-sitter CLI already installed"
+elif sudo dnf install -y tree-sitter-cli 2>/dev/null; then
+  info "tree-sitter-cli installed (dnf)"
+elif npm install -g tree-sitter-cli 2>/dev/null; then
+  info "tree-sitter-cli installed (npm)"
+else
+  warn "could not install tree-sitter CLI — nvim-treesitter (main) parser builds will fail"
+fi
+
 # ── LSP servers ────────────────────────────────────────────────────────────
 section "LSP servers"
 

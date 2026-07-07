@@ -29,7 +29,12 @@ local plugins = {
     { 'nvim-telescope/telescope.nvim', tag = '0.1.8',
       dependencies = { 'nvim-lua/plenary.nvim' }
     },
-    { 'nvim-treesitter/nvim-treesitter', name = 'tree-sitter' },
+    -- Branch depends on Neovim version: 0.11+ needs `main` (new API, works on
+    -- 0.12); older nvim stays on the legacy `master`. Same predicate as syntax.lua.
+    { 'nvim-treesitter/nvim-treesitter', name = 'tree-sitter',
+      branch = vim.fn.has('nvim-0.11') == 1 and 'main' or 'master',
+      build = ':TSUpdate',
+    },
 
     -- ── Syntax / QoL ─────────────────────────────────────────────────────────
     { 'lukas-reineke/indent-blankline.nvim', name = 'ibl' },

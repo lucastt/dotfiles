@@ -1,50 +1,75 @@
 -- Syntax highlight and awareness ------------------------------------------------------------
 
-require'nvim-treesitter.configs'.setup {
-  -- A list of parser names, or "all" (the five listed parsers should always be installed)
-  ensure_installed = {
-      "lua",
-      "vim",
-      "vimdoc",
-      "gomod",
-      "go",
-      "yaml",
-      "make",
-      "markdown",
-      "rust",
-      "toml",
-      "markdown_inline"
-  },
-
-  -- Install parsers synchronously (only applied to `ensure_installed`)
-  sync_install = false,
-
-  -- Automatically install missing parsers when entering buffer
-  auto_install = true,
-
-  highlight = {
-    enable = true,
-
-    -- Disable slow treesitter highlight for large files
-    disable = function(lang, buf)
-        local max_filesize = 100 * 1024 -- 100 KB
-        local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-        if ok and stats and stats.size > max_filesize then
-            return true
-        end
-    end,
-
-    -- Using this option may slow down nvim.
-    additional_vim_regex_highlighting = false,
-  },
-  -- experimental
-  ident = { enable = true },
-  rainbow = {
-      enable = true,
-      extended_mode = true,
-      max_file_lines = nil,
+-- nvim-treesitter changed its API between the legacy `master` branch and the
+-- current `main` branch (required for Neovim 0.12). We pick the API to match the
+-- branch pinned in plugins.lua, using the same nvim-0.11 predicate, so this
+-- shared config works on every machine regardless of its Neovim version.
+if vim.fn.has('nvim-0.11') == 1 then
+  -- ── main branch (Neovim 0.11+) ─────────────────────────────────────────────
+  local ensure = {
+      "lua", "vim", "vimdoc", "gomod", "go", "yaml", "make",
+      "markdown", "markdown_inline", "rust", "toml",
   }
-}
+  require('nvim-treesitter').install(ensure)
+
+  local max_filesize = 100 * 1024 -- 100 KB: skip TS highlight on big files
+  vim.api.nvim_create_autocmd('FileType', {
+    callback = function(args)
+      local ok, stats = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(args.buf))
+      if ok and stats and stats.size > max_filesize then
+        return
+      end
+      pcall(vim.treesitter.start, args.buf) -- no-op if the parser isn't installed yet
+    end,
+  })
+else
+  -- ── legacy master branch (Neovim ≤ 0.10) — unchanged from before ────────────
+  require'nvim-treesitter.configs'.setup {
+    -- A list of parser names, or "all" (the five listed parsers should always be installed)
+    ensure_installed = {
+        "lua",
+        "vim",
+        "vimdoc",
+        "gomod",
+        "go",
+        "yaml",
+        "make",
+        "markdown",
+        "rust",
+        "toml",
+        "markdown_inline"
+    },
+
+    -- Install parsers synchronously (only applied to `ensure_installed`)
+    sync_install = false,
+
+    -- Automatically install missing parsers when entering buffer
+    auto_install = true,
+
+    highlight = {
+      enable = true,
+
+      -- Disable slow treesitter highlight for large files
+      disable = function(lang, buf)
+          local max_filesize = 100 * 1024 -- 100 KB
+          local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+          if ok and stats and stats.size > max_filesize then
+              return true
+          end
+      end,
+
+      -- Using this option may slow down nvim.
+      additional_vim_regex_highlighting = false,
+    },
+    -- experimental
+    ident = { enable = true },
+    rainbow = {
+        enable = true,
+        extended_mode = true,
+        max_file_lines = nil,
+    }
+  }
+end
 
 -- Treesitter folding ... not working
 -- vim.opt.foldmethod = 'expr'

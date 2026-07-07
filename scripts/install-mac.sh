@@ -35,9 +35,12 @@ brew update
 # ── CLI tools ──────────────────────────────────────────────────────────────
 section "CLI tools"
 
+# NB: tree-sitter-cli (NOT the library-only `tree-sitter` formula) is required by
+# nvim-treesitter's `main` branch to compile parsers on Neovim 0.11+.
 brew install \
   git curl wget \
   tmux neovim \
+  tree-sitter-cli \
   ripgrep fd fzf bat eza zoxide \
   jq yq tree \
   starship \
