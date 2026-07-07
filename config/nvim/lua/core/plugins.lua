@@ -37,6 +37,7 @@ local plugins = {
     },
 
     -- ── Syntax / QoL ─────────────────────────────────────────────────────────
+    { 'HiPhish/rainbow-delimiters.nvim', name = 'rainbow-delimiters' },
     { 'lukas-reineke/indent-blankline.nvim', name = 'ibl' },
     { 'RRethy/vim-illuminate', name = 'illuminate' },
 

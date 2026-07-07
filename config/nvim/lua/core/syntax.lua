@@ -77,6 +77,42 @@ end
 -- vim.opt.foldtext = "v:lua.vim.treesitter.foldtext()"
 
 
+-- Rainbow delimiters ---------------------------------------------------------
+-- Works off the treesitter parsers directly, so it's fine on both the `main`
+-- and legacy `master` branches — no version guard needed.
+local ok_rainbow, rainbow = pcall(require, 'rainbow-delimiters.setup')
+if ok_rainbow then
+  rainbow.setup {
+    highlight = {
+      'RainbowDelimiterRed',
+      'RainbowDelimiterYellow',
+      'RainbowDelimiterBlue',
+      'RainbowDelimiterOrange',
+      'RainbowDelimiterGreen',
+      'RainbowDelimiterViolet',
+      'RainbowDelimiterCyan',
+    },
+  }
+
+  -- Match the One Dark palette; re-apply whenever the colorscheme reloads.
+  local function set_rainbow_hl()
+    local palette = {
+      RainbowDelimiterRed    = '#e06c75',
+      RainbowDelimiterYellow = '#e5c07b',
+      RainbowDelimiterBlue   = '#61afef',
+      RainbowDelimiterOrange = '#d19a66',
+      RainbowDelimiterGreen  = '#98c379',
+      RainbowDelimiterViolet = '#c678dd',
+      RainbowDelimiterCyan   = '#56b6c2',
+    }
+    for group, fg in pairs(palette) do
+      vim.api.nvim_set_hl(0, group, { fg = fg })
+    end
+  end
+  set_rainbow_hl()
+  vim.api.nvim_create_autocmd('ColorScheme', { callback = set_rainbow_hl })
+end
+
 require("ibl").setup()
 
 require('illuminate').configure({
